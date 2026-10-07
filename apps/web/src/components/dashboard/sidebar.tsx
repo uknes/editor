@@ -160,8 +160,6 @@ export function DashboardSidebarUser(props: DashboardSidebarUserProps) {
     return user?.user_metadata?.full_name || user?.email || "User";
   };
 
-  const planLabel = () => (auth.isPro() ? "Pro Plan" : "Free Plan");
-
   const initial = () => displayName().charAt(0).toUpperCase();
   const avatarUrl = useAvatar();
 
@@ -192,9 +190,11 @@ export function DashboardSidebarUser(props: DashboardSidebarUserProps) {
           <span class="truncate text-xs font-450 text-foreground">
             {displayName()}
           </span>
-          <span class="truncate text-xxs text-muted-foreground">
-            {planLabel()}
-          </span>
+          <Show when={auth.user()?.email && auth.user()?.email !== displayName()}>
+            <span class="truncate text-xxs text-muted-foreground">
+              {auth.user()?.email}
+            </span>
+          </Show>
         </div>
         <Icon name="settings" class="size-6 shrink-0 text-muted-foreground" />
       </button>

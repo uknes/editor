@@ -28,7 +28,7 @@ import { useTransforms } from "./use-transforms";
 import type { TransformType } from "@diffusionstudio/jsx";
 
 export function PromptInputActions() {
-  const { isGenerated, totalCredits, firstConfig } = useGenerationRecords();
+  const { isGenerated, firstConfig } = useGenerationRecords();
   const { imageNodes, videoNodes } = useMediaSelection();
   const { isOn, toggle } = useTransforms();
 
@@ -110,15 +110,6 @@ export function PromptInputActions() {
           </Tooltip>
           <DropdownMenuPortal>
             <DropdownMenuContent>
-              <Show when={isGenerated()}>
-                <div class="flex items-center gap-1 px-0 pr-2 h-7">
-                  <Icon name="ai-generate" class="text-muted-foreground" />
-                  <span class="text-xs text-muted-foreground">
-                    {totalCredits()} AI credits used
-                  </span>
-                </div>
-                <Separator class="my-1" />
-              </Show>
               <DropdownMenuGroup>
                 <Show when={hasImageSelection() || hasVideoSelection()}>
                   <TransformItem name="upscale" icon="arrow-scale" label="Upscale" isOn={isOn} toggle={toggle} />

@@ -12,12 +12,12 @@ The `media_*` tools take a path or a direct media URL. Footage behind a page URL
 
 # Matching depth to the question
 
-Read only as much of the footage as the answer requires — each pass costs time, and `media_listen` costs credits.
+Read only as much of the footage as the answer requires. All visual inspection tools (`media_filmstrip`, `media_grab`, `media_probe`, `timeline_filmstrip`, `media_waveform`) run 100% locally and free without credits. For silent footage or when hosted audio analysis is unavailable, proceed directly with visual inspection and waveform structure.
 
 - A duration or format question ends at `media_probe`.
 - "Where is the quiet part" or "how is it paced" is usually answered by the waveform and filmstrip alone.
 - A question about what was said resolves fastest through `media_transcribe`; search the transcript file for the passage and quote it with its times.
-- Questions about non-speech audio (music, tone, sound events, speaker identity) are what `media_listen` is for.
+- Questions about non-speech audio (music, tone, sound events, speaker identity) are what `media_listen` is for. If unavailable, continue with visual inspection.
 - Only questions about what is *seen* need frames — and the audio pass usually tells you which moments to grab, so grab those instead of scanning blind.
 - For open-ended questions ("summarize this", "what happens here"), combine passes: structure from waveform + filmstrip, content from transcript or listen, then frames at the salient moments to confirm what the picture shows.
 

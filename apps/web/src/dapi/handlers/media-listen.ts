@@ -10,9 +10,20 @@ import { requireAssetType, resolveAsset } from "../lib/assets";
 import type { ToolHandler } from "../handler";
 
 export const mediaListen: ToolHandler<"media_listen"> = async ({ path, prompt, start, end }, ctx) => {
-  ctx.app.requireUser();
   const asset = await resolveAsset(ctx, path);
   requireAssetType(asset, ["AUDIO", "VIDEO"], "a video or audio asset");
+
+  try {
+    ctx.app.requireUser();
+  } catch {
+    return {
+      result:
+        "Hosted audio analysis is not available in this local desktop fork without a connected Diffusion Studio service. " +
+        "Audio analysis is optional; continue using visual inspection (media_filmstrip, media_grab, timeline_filmstrip, media_probe) and media_waveform.",
+      start,
+      end,
+    };
+  }
 
   const hasWindow = start !== undefined || end !== undefined;
   // A video is stripped to its audio track: the model listens, it does not watch.
@@ -24,17 +35,38 @@ export const mediaListen: ToolHandler<"media_listen"> = async ({ path, prompt, s
   const window = hasWindow ? `-${start ?? 0}-${end ?? "end"}` : "";
   const uploadId = `${ctx.session()?.world.get(Project)?.id ?? "project"}-${asset.id}-analyze${audioOnly ? "-audio" : ""}${window}`
     .replace(/[^A-Za-z0-9._-]/g, "_");
-  const { uploadUrl, fileRef } = await trpc.getUploadUrl.mutate({ action: "resumable", id: uploadId, contentType });
 
-  // An upload URL means the server does not have this input yet.
-  if (uploadUrl) {
-    const transcoder = await transcodeForAnalysis(asset, { start, end, stripVideo: audioOnly });
-    const sessionUrl = await startResumableSession(uploadUrl, contentType);
-    const uploadPromise = uploadResumableStream(transcoder.readable, sessionUrl);
-    await transcoder.run?.();
-    await uploadPromise;
+  try {
+    const { uploadUrl, fileRef } = await trpc.getUploadUrl.mutate({ action: "resumable", id: uploadId, contentType });
+
+    // An upload URL means the server does not have this input yet.
+    if (uploadUrl) {
+      let transcoder;
+      try {
+        transcoder = await transcodeForAnalysis(asset, { start, end, stripVideo: audioOnly });
+      } catch (transcodeErr) {
+        return {
+          result: `No audio found to analyze (${(transcodeErr as Error).message}). Continue with visual inspection.`,
+          start,
+          end,
+        };
+      }
+      const sessionUrl = await startResumableSession(uploadUrl, contentType);
+      const uploadPromise = uploadResumableStream(transcoder.readable, sessionUrl);
+      await transcoder.run?.();
+      await uploadPromise;
+    }
+
+    const { analysis } = await trpc.analyze.mutate({ media: fileRef, prompt });
+    return { result: analysis, start, end };
+  } catch (err) {
+    const msg = (err as Error)?.message || "";
+    return {
+      result:
+        `Hosted audio analysis is not available in this local desktop fork (${msg || "hosted service unavailable"}). ` +
+        "Audio analysis is optional; continue using visual inspection (media_filmstrip, media_grab, timeline_filmstrip, media_probe) and media_waveform.",
+      start,
+      end,
+    };
   }
-
-  const { analysis } = await trpc.analyze.mutate({ media: fileRef, prompt });
-  return { result: analysis, start, end };
 };

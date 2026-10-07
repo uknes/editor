@@ -25,7 +25,18 @@ export const mediaTranscribe: ToolHandler<"media_transcribe"> = async ({ path },
     const fileRef = await uploadBlob(audioFile, uploadId);
     if (!fileRef) throw new Error(`Failed to upload asset ${asset.id} for transcription.`);
 
-    ({ results: transcript } = await trpc.transcribe.mutate({ audio: fileRef }));
+    try {
+      ({ results: transcript } = await trpc.transcribe.mutate({ audio: fileRef }));
+    } catch (err) {
+      const msg = (err as Error)?.message || "";
+      if (msg.includes("hosted Diffusion service") || msg.includes("PAYMENT_REQUIRED")) {
+        throw new Error(
+          "Hosted audio transcription is connected to the hosted Diffusion service and is not available locally yet. " +
+          "Transcription is optional; please proceed with visual inspection (media_filmstrip, media_grab, timeline_filmstrip, media_probe) and editing."
+        );
+      }
+      throw err;
+    }
     if (!transcript.length || transcript.every((s) => s.words.length === 0)) {
       throw new Error("No speech detected. The audio does not appear to contain recognizable speech.");
     }

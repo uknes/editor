@@ -88,6 +88,17 @@ describe("media_filmstrip and media_listen", () => {
     expect(issues(mediaListen.input.safeParse({ path: "/c.mp4", start: "0:05", end: 4 }))).toHaveProperty("end");
     expect(mediaFilmstrip.input.safeParse({ path: "/c.mp4", scale: 0 }).success).toBe(false);
   });
+
+  it("media_listen output schema permits graceful capability and informational strings", () => {
+    expect(
+      mediaListen.output.safeParse({
+        result:
+          "Hosted audio analysis is not available in this local desktop fork. Audio analysis is optional; continue using visual inspection.",
+        start: 0,
+        end: 10,
+      }).success,
+    ).toBe(true);
+  });
 });
 
 describe("logs and export", () => {
