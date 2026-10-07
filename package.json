@@ -20,7 +20,9 @@
     "postinstall": "patch-package",
     "lint": "npm run lint --workspaces --if-present",
     "check": "npm run check --workspaces --if-present",
-    "test": "npm run test --workspaces --if-present"
+    "test": "npm run test --workspaces --if-present",
+    "codex:cloud": "node scripts/codex-cloud.mjs",
+    "test:codex-cloud": "node --test scripts/codex-cloud.test.mjs"
   },
   "devDependencies": {
     "patch-package": "^8.0.1"
