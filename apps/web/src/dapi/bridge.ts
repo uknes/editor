@@ -2,31 +2,54 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { DAPI_WIRE, isDapiError } from "@diffusionstudio/dapi";
+import { isDapiError } from "@diffusionstudio/dapi";
+import { createDesktopToolTransport } from "./transport";
 
 import type { DapiCall, DapiCancel, DapiReply } from "@diffusionstudio/dapi";
 import type { Handlers, ServedToolName, ToolContext } from "./handler";
+import type { ToolTransport } from "./transport";
 
 /** Builds the per-call context; the bridge supplies the abort signal. */
 export type ContextFactory = (signal: AbortSignal) => ToolContext;
 
 /**
- * Answers renderer tools for the MCP server in main. Main validated the
- * arguments against the catalog before sending them; this side runs the
- * handler and replies, honouring cancels. Calls that arrive before the
- * handlers register (page bootstrap) are held and answered on registration.
+ * Answers renderer tools independently of how calls reach the renderer.
+ * Desktop uses Electron IPC; browser/mobile can attach an authenticated relay
+ * transport without changing the handlers or editor engine.
  */
 class ToolBridge {
   private handlers: Handlers | null = null;
   private context: ContextFactory | null = null;
   private held: DapiCall[] = [];
   private readonly inFlight = new Map<string, AbortController>();
+  private transport: ToolTransport | null = null;
+  private stopTransport: (() => void) | null = null;
 
   constructor() {
-    // Bind eagerly so calls during page bootstrap are caught rather than
-    // silently dropped before the handlers register.
-    window.desktop?.on(DAPI_WIRE.CALL, (payload) => void this.dispatch(payload as DapiCall));
-    window.desktop?.on(DAPI_WIRE.CANCEL, (payload) => this.inFlight.get((payload as DapiCancel).id)?.abort());
+    const desktop = createDesktopToolTransport();
+    if (desktop) this.attach(desktop);
+  }
+
+  attach(transport: ToolTransport): () => void {
+    if (this.transport) {
+      throw new Error("A DAPI transport is already attached");
+    }
+
+    this.transport = transport;
+    this.stopTransport = transport.start({
+      call: (call) => void this.dispatch(call),
+      cancel: (cancel) => this.cancel(cancel),
+    });
+
+    return () => {
+      if (this.transport !== transport) return;
+      this.stopTransport?.();
+      this.stopTransport = null;
+      this.transport = null;
+      this.held = [];
+      for (const controller of this.inFlight.values()) controller.abort();
+      this.inFlight.clear();
+    };
   }
 
   register(handlers: Handlers, context: ContextFactory): () => void {
@@ -41,6 +64,10 @@ class ToolBridge {
         this.context = null;
       }
     };
+  }
+
+  private cancel(cancel: DapiCancel): void {
+    this.inFlight.get(cancel.id)?.abort();
   }
 
   private async dispatch(call: DapiCall): Promise<void> {
@@ -62,12 +89,26 @@ class ToolBridge {
       reply = { id: call.id, ok: true, data: await run(call.args, this.context(controller.signal)) };
     } catch (error) {
       const message = (error as Error).message;
-      reply = { id: call.id, ok: false, error: isDapiError(error) ? { code: error.code, message } : { message } };
+      reply = {
+        id: call.id,
+        ok: false,
+        error: isDapiError(error) ? { code: error.code, message } : { message },
+      };
     } finally {
       this.inFlight.delete(call.id);
     }
-    if (!controller.signal.aborted) window.desktop?.send(DAPI_WIRE.REPLY, reply);
+
+    if (controller.signal.aborted) return;
+    try {
+      this.transport?.reply(reply);
+    } catch (error) {
+      console.error("[dapi] failed to send tool reply:", error);
+    }
   }
 }
 
 export const toolBridge = new ToolBridge();
+
+export function attachToolTransport(transport: ToolTransport): () => void {
+  return toolBridge.attach(transport);
+}
