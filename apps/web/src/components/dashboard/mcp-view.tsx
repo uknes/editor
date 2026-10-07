@@ -220,6 +220,10 @@ function DashboardCodexCloudSection() {
   const [busy, setBusy] = createSignal(false);
 
   const running = () => status()?.state === "running";
+  const statusTimer = setInterval(() => {
+    if (running()) void refetch();
+  }, 5000);
+  onCleanup(() => clearInterval(statusTimer));
 
   const description = () => {
     const current = status();
@@ -291,7 +295,11 @@ function DashboardCodexCloudSection() {
             action={
               <Button
                 variant="secondary"
-                disabled={busy() || !status()}
+                disabled={
+                  busy() ||
+                  !status() ||
+                  (!running() && (!status()!.clientAvailable || !status()!.mcpReachable))
+                }
                 onClick={() => running() ? void disconnect() : setFormOpen(true)}
               >
                 {running() ? "Disconnect" : "Connect"}
@@ -355,7 +363,7 @@ function DashboardCodexCloudSection() {
           </TextField>
 
           <p class="text-xs text-muted-foreground">
-            The runtime key is used only to launch the local tunnel process. Diffusion Studio does not save it.
+            The runtime key is passed only to the local tunnel process for this connection. Diffusion Studio does not save it.
           </p>
         </div>
       </DashboardFormModal>

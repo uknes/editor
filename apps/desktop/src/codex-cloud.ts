@@ -130,6 +130,13 @@ export async function startCodexCloud(request: CodexCloudStartRequest): Promise<
     if (line) console.error(`[codex-cloud] ${line}`);
   });
 
+  proc.on("error", (error) => {
+    if (child !== proc) return;
+    child = null;
+    startedAt = null;
+    lastError = error.message;
+  });
+
   proc.once("exit", (code, signal) => {
     if (child !== proc) return;
     child = null;
