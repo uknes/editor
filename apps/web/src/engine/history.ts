@@ -203,6 +203,18 @@ export class EditHistory {
 		if (this.open) this.commit();
 	}
 
+	/**
+	 * Brackets an AI edit or compound operation: all edits until endBatch
+	 * are grouped into a single undo transaction.
+	 */
+	public beginBatch(): void {
+		this.beginGesture();
+	}
+
+	public endBatch(): void {
+		this.endGesture();
+	}
+
 	/** Takes back the last step, and hands it to redo. */
 	public undo(): void {
 		if (this.open) this.commit();

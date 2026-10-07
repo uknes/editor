@@ -64,12 +64,20 @@ export function fetchCodexCloudStatus(): Promise<CodexCloudStatus> {
   return mainBridge.call(MAIN_CHANNELS.CODEX_CLOUD_STATUS, undefined);
 }
 
+export function installCodexCloudTunnelClient(): Promise<CodexCloudStatus> {
+  return mainBridge.call(MAIN_CHANNELS.CODEX_CLOUD_INSTALL, undefined);
+}
+
 export function startCodexCloud(request: CodexCloudStartRequest): Promise<CodexCloudStatus> {
   return mainBridge.call(MAIN_CHANNELS.CODEX_CLOUD_START, request);
 }
 
 export function stopCodexCloud(): Promise<CodexCloudStatus> {
   return mainBridge.call(MAIN_CHANNELS.CODEX_CLOUD_STOP, undefined);
+}
+
+export function onCodexCloudStatusChanged(handler: (status: CodexCloudStatus) => void): () => void {
+  return mainBridge.handle(MAIN_CHANNELS.CODEX_CLOUD_CHANGED, handler);
 }
 
 export async function fetchCliStatus(): Promise<CliStatus | null> {

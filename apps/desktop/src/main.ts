@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { app, BrowserWindow, nativeImage, session, shell } from "electron";
-import { dirname, join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { existsSync } from "node:fs";
 import { mkdir, open, rename, unlink } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
@@ -13,7 +13,7 @@ import { tempPathFor } from "./atomic";
 import { DapiServer } from "./dapi/server";
 import { agentChatEndpoint, configureAgentChat, deleteProjectChats, stopAgentChat } from "./agent-chat";
 import { cliStatus, installCli, refreshCliShim, uninstallCli } from "./cli-install";
-import { codexCloudStatus, startCodexCloud, stopCodexCloud } from "./codex-cloud";
+import { codexCloudStatus, installTunnelClient, onCodexCloudStatusChange, startCodexCloud, stopCodexCloud } from "./codex-cloud";
 import { applyMcp, healMcpRegistrations, mcpStatus } from "./mcp-install";
 import { trackEvent, trackInstall } from "./analytics";
 import { setupAppMenu } from "./menu";
@@ -108,7 +108,12 @@ function setColorMode(mode: "dark" | "light") {
   mainWindow.setTitleBarOverlay({ ...WINDOWS_OVERLAY_COLORS[mode], height: WINDOWS_OVERLAY_HEIGHT });
 }
 
-if (app.isPackaged && !squirrelLaunch) {
+function hasSquirrelUpdater(): boolean {
+  if (process.platform !== "win32") return true;
+  return existsSync(resolve(process.execPath, "..", "..", "Update.exe"));
+}
+
+if (app.isPackaged && !squirrelLaunch && hasSquirrelUpdater()) {
   const notifyUser = makeUserNotifier();
   updateElectronApp({
     repo: "diffusionstudio/editor",
@@ -382,6 +387,10 @@ if (squirrelLaunch) {
   mainBridge.handle(MAIN_CHANNELS.CODEX_CLOUD_STATUS, () => codexCloudStatus());
   mainBridge.handle(MAIN_CHANNELS.CODEX_CLOUD_START, (request) => startCodexCloud(request));
   mainBridge.handle(MAIN_CHANNELS.CODEX_CLOUD_STOP, () => stopCodexCloud());
+  mainBridge.handle(MAIN_CHANNELS.CODEX_CLOUD_INSTALL, () => installTunnelClient());
+  onCodexCloudStatusChange((status) => {
+    mainBridge.emit(windows.current(), MAIN_CHANNELS.CODEX_CLOUD_CHANGED, status);
+  });
   mainBridge.handle(MAIN_CHANNELS.CLI_STATUS, () => cliStatus());
   mainBridge.handle(MAIN_CHANNELS.CLI_INSTALL, () => installCli());
   mainBridge.handle(MAIN_CHANNELS.CLI_UNINSTALL, () => uninstallCli());

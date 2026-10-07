@@ -73,6 +73,7 @@ export const MAIN_CHANNELS = {
   CODEX_CLOUD_STATUS: "codex-cloud:status",
   CODEX_CLOUD_START: "codex-cloud:start",
   CODEX_CLOUD_STOP: "codex-cloud:stop",
+  CODEX_CLOUD_INSTALL: "codex-cloud:install",
   CLI_STATUS: "cli:status",
   CLI_INSTALL: "cli:install",
   CLI_UNINSTALL: "cli:uninstall",
@@ -82,6 +83,7 @@ export const MAIN_CHANNELS = {
   CHECKOUT_CALLBACK: "checkout:callback",
   WINDOW_FULLSCREEN_CHANGE: "window:fullscreen-change",
   PROJECTS_CHANGED: "projects:changed",
+  CODEX_CLOUD_CHANGED: "codex-cloud:changed",
 } as const;
 
 /**
@@ -142,13 +144,29 @@ export type McpApplyResult = {
   failures: { id: AgentId; error: string }[];
 };
 
+export type CodexCloudState =
+  | "checking"
+  | "tunnel-client-missing"
+  | "installing"
+  | "ready"
+  | "connecting"
+  | "connected"
+  | "reconnecting"
+  | "disconnected"
+  | "error";
+
 export type CodexCloudStatus = {
-  state: "stopped" | "running";
+  state: CodexCloudState;
   clientAvailable: boolean;
+  clientManaged: boolean;
+  clientPath: string | null;
+  clientVersion: string | null;
   mcpReachable: boolean;
   tunnelId: string | null;
-  startedAt: string | null;
-  error: string | null;
+  connectedAt: string | null;
+  connectedDurationMs: number | null;
+  healthUrl: string | null;
+  lastError: string | null;
 };
 
 export type CodexCloudStartRequest = {
@@ -349,6 +367,7 @@ export type MainRequestMap = {
   [MAIN_CHANNELS.CODEX_CLOUD_STATUS]: { request: void; response: CodexCloudStatus };
   [MAIN_CHANNELS.CODEX_CLOUD_START]: { request: CodexCloudStartRequest; response: CodexCloudStatus };
   [MAIN_CHANNELS.CODEX_CLOUD_STOP]: { request: void; response: CodexCloudStatus };
+  [MAIN_CHANNELS.CODEX_CLOUD_INSTALL]: { request: void; response: CodexCloudStatus };
   [MAIN_CHANNELS.CLI_STATUS]: { request: void; response: CliStatus };
   [MAIN_CHANNELS.CLI_INSTALL]: { request: void; response: CliInstallResult };
   [MAIN_CHANNELS.CLI_UNINSTALL]: { request: void; response: CliUninstallResult };
@@ -371,6 +390,7 @@ export type MainEventMap = {
   [MAIN_CHANNELS.WINDOW_FULLSCREEN_CHANGE]: { fullscreen: boolean };
   // A file inside a watched project folder changed (path relative to `dir`).
   [MAIN_CHANNELS.PROJECTS_CHANGED]: { dir: string; path: string };
+  [MAIN_CHANNELS.CODEX_CLOUD_CHANGED]: CodexCloudStatus;
 };
 export type MainEventChannel = keyof MainEventMap;
 

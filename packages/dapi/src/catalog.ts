@@ -24,6 +24,10 @@ import { mediaSegment } from "./tools/media-segment";
 import { fonts } from "./tools/fonts";
 import { report } from "./tools/report";
 import { appWindow } from "./tools/window";
+import { renderPreview } from "./tools/render-preview";
+import { timelineFilmstrip } from "./tools/timeline-filmstrip";
+import { timelineInspect } from "./tools/timeline-inspect";
+import { timelineUndo } from "./tools/timeline-undo";
 
 /**
  * Every tool, in the order a listing shows them: the project loop first
@@ -35,6 +39,10 @@ export const catalog = [
   context,
   capture,
   check,
+  renderPreview,
+  timelineFilmstrip,
+  timelineInspect,
+  timelineUndo,
   exportScene,
   mediaProbe,
   mediaGrab,

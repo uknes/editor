@@ -41,6 +41,11 @@ import type { VoiceInfo as VoiceInfoSchema } from "./tools/voices";
 import type { FrameQuality as FrameQualitySchema } from "./tools/media-grab";
 import type { TranscriptSegment as TranscriptSegmentSchema, TranscriptWord as TranscriptWordSchema } from "./tools/media-transcribe";
 import type { FontFamily as FontFamilySchema } from "./tools/fonts";
+import type {
+  TimelineClip as TimelineClipSchema,
+  TimelineTrack as TimelineTrackSchema,
+  TimelineScene as TimelineSceneSchema,
+} from "./tools/timeline-inspect";
 import type { ToolArgs, ToolOutput, ToolResult } from "./catalog";
 
 export type LogLevel = z.output<typeof LogLevelSchema>;
@@ -59,6 +64,9 @@ export type FrameQuality = z.output<typeof FrameQualitySchema>;
 export type TranscriptWord = z.output<typeof TranscriptWordSchema>;
 export type TranscriptSegment = z.output<typeof TranscriptSegmentSchema>;
 export type FontFamily = z.output<typeof FontFamilySchema>;
+export type TimelineClip = z.output<typeof TimelineClipSchema>;
+export type TimelineTrack = z.output<typeof TimelineTrackSchema>;
+export type TimelineScene = z.output<typeof TimelineSceneSchema>;
 
 export type OpenRequest = ToolArgs<"open">;
 export type OpenResult = ToolResult<"open">;
@@ -88,3 +96,11 @@ export type MediaSegmentRequest = ToolArgs<"media_segment">;
 export type MediaSegmentResult = ToolResult<"media_segment">;
 export type FontsRequest = ToolArgs<"fonts">;
 export type ReportRequest = ToolArgs<"report">;
+export type RenderPreviewRequest = ToolArgs<"render_preview">;
+export type RenderPreviewResult = ToolResult<"render_preview">;
+export type TimelineFilmstripRequest = ToolArgs<"timeline_filmstrip">;
+export type TimelineFilmstripResult = ToolResult<"timeline_filmstrip">;
+export type TimelineInspectRequest = ToolArgs<"timeline_inspect">;
+export type TimelineInspectResult = ToolResult<"timeline_inspect">;
+export type TimelineUndoRequest = ToolArgs<"timeline_undo">;
+export type TimelineUndoResult = ToolResult<"timeline_undo">;

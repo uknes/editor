@@ -109,7 +109,7 @@ describe("WindowHost", () => {
   it("never idles out a window the user has open, and gives the app a Dock icon while it is", async () => {
     await host.show();
     expect(host.visible()).toBe(true);
-    expect(dock.show).toHaveBeenCalled();
+    if (process.platform === "darwin") expect(dock.show).toHaveBeenCalled();
     vi.advanceTimersByTime(IDLE * 2);
     expect(host.current()).not.toBeNull();
   });
@@ -120,7 +120,7 @@ describe("WindowHost", () => {
     window.close();
     expect(window.isDestroyed()).toBe(false);
     expect(host.visible()).toBe(false);
-    expect(dock.hide).toHaveBeenCalled();
+    if (process.platform === "darwin") expect(dock.hide).toHaveBeenCalled();
     vi.advanceTimersByTime(IDLE);
     expect(window.isDestroyed()).toBe(true);
   });
