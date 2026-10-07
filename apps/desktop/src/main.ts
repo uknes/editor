@@ -13,6 +13,7 @@ import { tempPathFor } from "./atomic";
 import { DapiServer } from "./dapi/server";
 import { agentChatEndpoint, configureAgentChat, deleteProjectChats, stopAgentChat } from "./agent-chat";
 import { cliStatus, installCli, refreshCliShim, uninstallCli } from "./cli-install";
+import { codexCloudStatus, startCodexCloud, stopCodexCloud } from "./codex-cloud";
 import { applyMcp, healMcpRegistrations, mcpStatus } from "./mcp-install";
 import { trackEvent, trackInstall } from "./analytics";
 import { setupAppMenu } from "./menu";
@@ -378,6 +379,9 @@ if (squirrelLaunch) {
   mainBridge.handle(MAIN_CHANNELS.AGENT_CHAT_ENDPOINT, () => agentChatEndpoint());
   mainBridge.handle(MAIN_CHANNELS.MCP_STATUS, () => mcpStatus());
   mainBridge.handle(MAIN_CHANNELS.MCP_APPLY, (request) => applyMcp(request));
+  mainBridge.handle(MAIN_CHANNELS.CODEX_CLOUD_STATUS, () => codexCloudStatus());
+  mainBridge.handle(MAIN_CHANNELS.CODEX_CLOUD_START, (request) => startCodexCloud(request));
+  mainBridge.handle(MAIN_CHANNELS.CODEX_CLOUD_STOP, () => stopCodexCloud());
   mainBridge.handle(MAIN_CHANNELS.CLI_STATUS, () => cliStatus());
   mainBridge.handle(MAIN_CHANNELS.CLI_INSTALL, () => installCli());
   mainBridge.handle(MAIN_CHANNELS.CLI_UNINSTALL, () => uninstallCli());
@@ -519,6 +523,7 @@ if (squirrelLaunch) {
   app.on("before-quit", () => {
     unwatchAll();
     stopAgentChat();
+    stopCodexCloud();
     dapi.stop();
     tray.destroy();
   });

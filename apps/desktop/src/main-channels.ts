@@ -70,6 +70,9 @@ export const MAIN_CHANNELS = {
   AGENT_CHAT_ENDPOINT: "agent-chat:endpoint",
   MCP_STATUS: "mcp:status",
   MCP_APPLY: "mcp:apply",
+  CODEX_CLOUD_STATUS: "codex-cloud:status",
+  CODEX_CLOUD_START: "codex-cloud:start",
+  CODEX_CLOUD_STOP: "codex-cloud:stop",
   CLI_STATUS: "cli:status",
   CLI_INSTALL: "cli:install",
   CLI_UNINSTALL: "cli:uninstall",
@@ -137,6 +140,20 @@ export type McpApplyResult = {
   added: AgentId[];
   removed: AgentId[];
   failures: { id: AgentId; error: string }[];
+};
+
+export type CodexCloudStatus = {
+  state: "stopped" | "running";
+  clientAvailable: boolean;
+  mcpReachable: boolean;
+  tunnelId: string | null;
+  startedAt: string | null;
+  error: string | null;
+};
+
+export type CodexCloudStartRequest = {
+  tunnelId: string;
+  apiKey: string;
 };
 
 // Where the `diffusion` command stands. `managed` means what is there is a
@@ -329,6 +346,9 @@ export type MainRequestMap = {
   // calls put the macOS admin prompt on screen.
   [MAIN_CHANNELS.MCP_STATUS]: { request: void; response: McpStatus };
   [MAIN_CHANNELS.MCP_APPLY]: { request: McpApplyRequest; response: McpApplyResult };
+  [MAIN_CHANNELS.CODEX_CLOUD_STATUS]: { request: void; response: CodexCloudStatus };
+  [MAIN_CHANNELS.CODEX_CLOUD_START]: { request: CodexCloudStartRequest; response: CodexCloudStatus };
+  [MAIN_CHANNELS.CODEX_CLOUD_STOP]: { request: void; response: CodexCloudStatus };
   [MAIN_CHANNELS.CLI_STATUS]: { request: void; response: CliStatus };
   [MAIN_CHANNELS.CLI_INSTALL]: { request: void; response: CliInstallResult };
   [MAIN_CHANNELS.CLI_UNINSTALL]: { request: void; response: CliUninstallResult };

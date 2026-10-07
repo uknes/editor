@@ -18,12 +18,14 @@ import type {
   CliInstallResult,
   CliStatus,
   CliUninstallResult,
+  CodexCloudStartRequest,
+  CodexCloudStatus,
   McpApplyRequest,
   McpApplyResult,
   McpStatus,
 } from "@desktop/main-channels";
 
-export type { AgentId, McpAgentStatus, McpStatus, CliStatus } from "@desktop/main-channels";
+export type { AgentId, McpAgentStatus, McpStatus, CliStatus, CodexCloudStatus } from "@desktop/main-channels";
 
 /** The icon each agent is drawn with, by the name in `assets/icons`. */
 export const AGENT_ICONS: Record<AgentId, string> = {
@@ -56,6 +58,18 @@ export async function fetchMcpStatus(): Promise<McpStatus | null> {
 
 export function applyMcp(request: McpApplyRequest): Promise<McpApplyResult> {
   return mainBridge.call(MAIN_CHANNELS.MCP_APPLY, request);
+}
+
+export function fetchCodexCloudStatus(): Promise<CodexCloudStatus> {
+  return mainBridge.call(MAIN_CHANNELS.CODEX_CLOUD_STATUS, undefined);
+}
+
+export function startCodexCloud(request: CodexCloudStartRequest): Promise<CodexCloudStatus> {
+  return mainBridge.call(MAIN_CHANNELS.CODEX_CLOUD_START, request);
+}
+
+export function stopCodexCloud(): Promise<CodexCloudStatus> {
+  return mainBridge.call(MAIN_CHANNELS.CODEX_CLOUD_STOP, undefined);
 }
 
 export async function fetchCliStatus(): Promise<CliStatus | null> {
