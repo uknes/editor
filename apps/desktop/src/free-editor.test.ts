@@ -163,4 +163,14 @@ describe("Free local desktop editor verification", () => {
       expect(existsSync(fullPath)).toBe(false);
     }
   });
+
+  it("11. verifies auto-updater is completely disabled so upstream updates are never downloaded", () => {
+    const mainFile = join(root, "apps/desktop/src/main.ts");
+    const mainSource = readFileSync(mainFile, "utf8");
+
+    expect(mainSource).not.toContain("updateElectronApp");
+    expect(mainSource).not.toContain("update-electron-app");
+    expect(mainSource).not.toContain("hasSquirrelUpdater");
+  });
 });
+

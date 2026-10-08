@@ -3,12 +3,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { app, BrowserWindow, nativeImage, session, shell } from "electron";
-import { dirname, join, resolve } from "node:path";
+import { dirname, join } from "node:path";
 import { existsSync } from "node:fs";
 import { mkdir, open, rename, unlink } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
 import type { FileHandle } from "node:fs/promises";
-import { makeUserNotifier, updateElectronApp } from "update-electron-app";
 import { tempPathFor } from "./atomic";
 import { DapiServer } from "./dapi/server";
 import { agentChatEndpoint, configureAgentChat, deleteProjectChats, stopAgentChat } from "./agent-chat";
@@ -108,22 +107,7 @@ function setColorMode(mode: "dark" | "light") {
   mainWindow.setTitleBarOverlay({ ...WINDOWS_OVERLAY_COLORS[mode], height: WINDOWS_OVERLAY_HEIGHT });
 }
 
-function hasSquirrelUpdater(): boolean {
-  if (process.platform !== "win32") return true;
-  return existsSync(resolve(process.execPath, "..", "..", "Update.exe"));
-}
 
-if (app.isPackaged && !squirrelLaunch && hasSquirrelUpdater()) {
-  const notifyUser = makeUserNotifier();
-  updateElectronApp({
-    repo: "diffusionstudio/editor",
-    onNotifyUser: function (info) {
-      if (windows.visible()) {
-        notifyUser(info);
-      }
-    },
-  });
-}
 
 const openWrites = new Map<string, { handle: FileHandle; path: string; temp: string; reserved: boolean }>();
 
