@@ -30,12 +30,14 @@ type AuthContextValue = {
   session: Accessor<Session | null>;
   user: Accessor<User | null>;
   isAuthenticated: Accessor<boolean>;
+  isGuest: Accessor<boolean>;
   isLoading: Accessor<boolean>;
   productUpdatesEnabled: Accessor<boolean>;
   marketingAnnouncementsEnabled: Accessor<boolean>;
   signInWithOAuth: (provider: OAuthProvider) => Promise<void>;
   signInWithOtp: (email: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
+  skipLogin: () => void;
   deleteAccount: () => Promise<{ error: string | null }>;
   refreshSession: () => Promise<void>;
 };
@@ -50,9 +52,13 @@ type UserDataSubset = Pick<
 
 const ELECTRON_AUTH_REDIRECT = 'https://app.diffusion.studio/auth/electron-callback.html';
 const USER_DATA_QUERY = "product_updates_enabled,marketing_announcements_enabled" as const;
+const SKIP_LOGIN_KEY = 'diffusion_skip_login';
 
 export function AuthProvider(props: { children: JSX.Element }) {
   const [session, setSession] = createSignal<Session | null>(null);
+  const [isGuest, setIsGuest] = createSignal(
+    typeof localStorage !== 'undefined' && localStorage.getItem(SKIP_LOGIN_KEY) === 'true'
+  );
   const [isLoading, setIsLoading] = createSignal(true);
   onMount(() => {
     if (!supabase) {
@@ -217,7 +223,18 @@ export function AuthProvider(props: { children: JSX.Element }) {
     return { error: null };
   };
 
+  const skipLogin = () => {
+    setIsGuest(true);
+    try {
+      localStorage.setItem(SKIP_LOGIN_KEY, 'true');
+    } catch {}
+  };
+
   const signOut = async () => {
+    setIsGuest(false);
+    try {
+      localStorage.removeItem(SKIP_LOGIN_KEY);
+    } catch {}
     if (!supabase) return;
 
     const { error } = await supabase.auth.signOut();
@@ -265,7 +282,9 @@ export function AuthProvider(props: { children: JSX.Element }) {
   const ctx: AuthContextValue = {
     session,
     user: () => session()?.user ?? null,
-    isAuthenticated: () => !!session(),
+    isAuthenticated: () => !!session() || isGuest(),
+    isGuest,
+    skipLogin,
     isLoading,
     productUpdatesEnabled,
     marketingAnnouncementsEnabled,

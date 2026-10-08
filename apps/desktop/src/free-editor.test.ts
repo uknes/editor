@@ -184,5 +184,17 @@ describe("Free local desktop editor verification", () => {
     expect(webIndexSource).not.toContain("initAnalytics");
     expect(mainSource).not.toContain("trackInstall");
   });
+
+  it("13. verifies skip login / local guest mode is supported without requiring an account", () => {
+    const loginFile = join(root, "apps/web/src/pages/login.tsx");
+    const loginSource = readFileSync(loginFile, "utf8");
+    const authFile = join(root, "apps/web/src/context/auth.tsx");
+    const authSource = readFileSync(authFile, "utf8");
+
+    expect(loginSource).toContain("Skip login (use locally)");
+    expect(loginSource).toContain("auth.skipLogin()");
+    expect(authSource).toContain("skipLogin");
+    expect(authSource).toContain("isGuest");
+  });
 });
 

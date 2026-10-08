@@ -190,7 +190,16 @@ export function DashboardSidebarUser(props: DashboardSidebarUserProps) {
           <span class="truncate text-xs font-450 text-foreground">
             {displayName()}
           </span>
-          <Show when={auth.user()?.email && auth.user()?.email !== displayName()}>
+          <Show
+            when={auth.user()?.email && auth.user()?.email !== displayName()}
+            fallback={
+              <Show when={auth.isGuest()}>
+                <span class="truncate text-xxs text-muted-foreground">
+                  Local Mode
+                </span>
+              </Show>
+            }
+          >
             <span class="truncate text-xxs text-muted-foreground">
               {auth.user()?.email}
             </span>

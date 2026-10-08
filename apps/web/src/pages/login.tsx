@@ -127,6 +127,21 @@ export function LoginPage() {
                 {otpSending() ? 'Sending...' : 'Send magic link'}
               </Button>
             </form>
+
+            <div class="flex items-center justify-center gap-3">
+              <div class="h-px flex-1 bg-border" />
+              <span class="text-xs text-muted-foreground">or</span>
+              <div class="h-px flex-1 bg-border" />
+            </div>
+
+            <Button
+              type="button"
+              variant="outline"
+              class="w-full"
+              onClick={() => auth.skipLogin()}
+            >
+              Skip login (use locally)
+            </Button>
           </div>
 
           <DevAuthCodeInput />

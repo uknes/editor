@@ -635,14 +635,37 @@ function DashboardAccountDangerZoneSection() {
 }
 
 export function DashboardAccountView() {
+  const auth = useAuth();
+
   return (
     <DashboardScrollView>
-      <DashboardAccountPersonalDetailsSection />
-      <DashboardAccountLoginSecuritySection />
-      <DashboardAccountActiveSessionsSection />
-      <DashboardAccountLinkedAccountsSection />
-      <DashboardAccountEmailPreferencesSection />
-      <DashboardAccountDangerZoneSection />
+      <Show
+        when={!auth.isGuest()}
+        fallback={
+          <DashboardSurfaceSection title="Local account">
+            <DashboardInfoActionRow
+              title="You are using the editor in local guest mode."
+              description={
+                <p>
+                  All editor features, timeline tools, rendering, and MCP capabilities run completely locally without an account. You can sign in anytime to link an account or sync cloud projects.
+                </p>
+              }
+              action={
+                <Button variant="secondary" onClick={() => auth.signOut()}>
+                  Sign in
+                </Button>
+              }
+            />
+          </DashboardSurfaceSection>
+        }
+      >
+        <DashboardAccountPersonalDetailsSection />
+        <DashboardAccountLoginSecuritySection />
+        <DashboardAccountActiveSessionsSection />
+        <DashboardAccountLinkedAccountsSection />
+        <DashboardAccountEmailPreferencesSection />
+        <DashboardAccountDangerZoneSection />
+      </Show>
     </DashboardScrollView>
   );
 }
