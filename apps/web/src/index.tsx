@@ -8,7 +8,9 @@ import './index.css'
 import App from './app'
 import { restoreLastRoute } from './lib/persist-route'
 
-document.addEventListener('contextmenu', (e) => e.preventDefault())
+import { initMobileDesktopBridge } from './desktop-bridge'
+
+initMobileDesktopBridge();
 
 if (window.desktop) {
   document.documentElement.dataset.platform = window.desktop.platform;

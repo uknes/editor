@@ -29,6 +29,7 @@ import { useFullscreenState } from "@/hooks/use-fullscreen-state";
 import { connectedAgents, fetchMcpStatus } from "@/lib/mcp";
 import { isDesktop, isWindowsDesktop, openProjectFolder, pickProjectFolder } from "@/projects";
 import { isInputTarget } from "@/utils";
+import { useIsPhone } from "@/utils/mobile";
 
 import type { DashboardView } from "@/components/dashboard/types";
 
@@ -121,17 +122,7 @@ export function DashboardPage() {
     if (isSettingsView(view())) setView("home");
   };
 
-  const [isMobile, setIsMobile] = createSignal(
-    typeof window !== "undefined" && (window.innerWidth < 768 || window.matchMedia("(max-width: 768px)").matches)
-  );
-
-  onMount(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768 || window.matchMedia("(max-width: 768px)").matches);
-    };
-    window.addEventListener("resize", handleResize);
-    onCleanup(() => window.removeEventListener("resize", handleResize));
-  });
+  const isMobile = useIsPhone();
 
   return (
     <div class="flex h-screen w-full min-h-0 flex-col md:flex-row overflow-hidden bg-sidebar">
