@@ -172,5 +172,17 @@ describe("Free local desktop editor verification", () => {
     expect(mainSource).not.toContain("update-electron-app");
     expect(mainSource).not.toContain("hasSquirrelUpdater");
   });
+
+  it("12. verifies Sentry and Umami telemetry are completely disabled", () => {
+    const webIndexFile = join(root, "apps/web/src/index.tsx");
+    const webIndexSource = readFileSync(webIndexFile, "utf8");
+    const mainFile = join(root, "apps/desktop/src/main.ts");
+    const mainSource = readFileSync(mainFile, "utf8");
+
+    expect(webIndexSource).not.toContain("Sentry.init");
+    expect(webIndexSource).not.toContain("@sentry");
+    expect(webIndexSource).not.toContain("initAnalytics");
+    expect(mainSource).not.toContain("trackInstall");
+  });
 });
 

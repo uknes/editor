@@ -14,7 +14,7 @@ import { agentChatEndpoint, configureAgentChat, deleteProjectChats, stopAgentCha
 import { cliStatus, installCli, refreshCliShim, uninstallCli } from "./cli-install";
 import { codexCloudStatus, installTunnelClient, onCodexCloudStatusChange, startCodexCloud, stopCodexCloud } from "./codex-cloud";
 import { applyMcp, healMcpRegistrations, mcpStatus } from "./mcp-install";
-import { trackEvent, trackInstall } from "./analytics";
+import { trackEvent } from "./analytics";
 import { setupAppMenu } from "./menu";
 import { AppTray } from "./tray";
 import { WindowHost } from "./window-host";
@@ -504,7 +504,6 @@ if (squirrelLaunch) {
     );
     refreshCliShim();
     healMcpRegistrations();
-    trackInstall();
     tray.start();
 
     // Opened by a person (Finder, Dock, Start menu): show the editor
