@@ -15,6 +15,8 @@
     "build": "npm run build --workspace=@diffusionstudio/web",
     "build:web_v1": "npm run build --workspace=@diffusionstudio/web",
     "build:desktop": "npm run build --workspace=@diffusionstudio/desktop",
+    "build:android": "npm run build --workspace=@diffusionstudio/web && npx cap sync android && cd android && gradlew.bat assembleDebug",
+    "sync:android": "npx cap sync android",
     "make": "npm run make --workspace=@diffusionstudio/desktop",
     "release": "node scripts/release.mjs",
     "postinstall": "patch-package",
@@ -23,6 +25,9 @@
     "test": "npm run test --workspaces --if-present"
   },
   "devDependencies": {
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/cli": "^8.5.3",
+    "@capacitor/core": "^8.5.3",
     "patch-package": "^8.0.1"
   }
 }

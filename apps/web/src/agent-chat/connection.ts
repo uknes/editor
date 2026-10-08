@@ -11,14 +11,36 @@ import { AgentChatClient } from "@diffusionstudio/agent-chat";
 import { MAIN_CHANNELS } from "@desktop/main-channels";
 import { mainBridge } from "@/lib/ipc";
 
-const configuredUrl = (): string | null => (import.meta.env.VITE_AGENT_CHAT_URL as string | undefined) || null;
+export const AGENT_ENDPOINT_STORAGE_KEY = "diffusion:agent-chat:endpoint";
+
+export function getCustomAgentUrl(): string | null {
+  if (typeof localStorage === "undefined") return null;
+  return localStorage.getItem(AGENT_ENDPOINT_STORAGE_KEY);
+}
+
+export function setCustomAgentUrl(url: string | null): void {
+  if (typeof localStorage === "undefined") return;
+  if (url && url.trim()) {
+    localStorage.setItem(AGENT_ENDPOINT_STORAGE_KEY, url.trim());
+  } else {
+    localStorage.removeItem(AGENT_ENDPOINT_STORAGE_KEY);
+  }
+}
+
+const configuredUrl = (): string | null => 
+  getCustomAgentUrl() || (import.meta.env.VITE_AGENT_CHAT_URL as string | undefined) || null;
 
 export async function resolveEndpoint(): Promise<string | null> {
   if (window.desktop) return (await mainBridge.call(MAIN_CHANNELS.AGENT_CHAT_ENDPOINT, undefined))?.url ?? null;
   return configuredUrl();
 }
 
-/** Whether there is any host to talk to at all; false in a plain web build. */
-export const hasHost = (): boolean => !!window.desktop || configuredUrl() !== null;
+/** Whether an agent host is available or can be configured by the user. */
+export const hasHost = (): boolean => true;
 
 export const client = new AgentChatClient({ resolveEndpoint });
+
+export function reconnectAgentClient(): void {
+  client.close();
+  client.connect();
+}

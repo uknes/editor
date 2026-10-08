@@ -8,6 +8,7 @@ import { leftSidebarWidth } from "@/agent-chat";
 import { Timeline, Layers } from "@/components/timeline";
 import { Soundboard, Inspector } from "@/components/sidebar-right";
 import { EditorTitleBar, FloatingProjectHeader, SidebarLeft } from "@/components/sidebar-left";
+import { MobileEditor } from "@/components/mobile/mobile-editor";
 import { useLayout, MIN_TIMELINE_HEIGHT } from "@/context/layout";
 import { useEditorApi } from "@/dapi";
 import { RULER_HEIGHT } from "@/engine/timeline";
@@ -237,9 +238,22 @@ export function EditorPage() {
     document.addEventListener('pointerup', handleEnd);
   };
 
+  const [isMobile, setIsMobile] = createSignal(
+    typeof window !== "undefined" && (window.innerWidth < 768 || window.matchMedia("(max-width: 768px)").matches)
+  );
+
+  onMount(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768 || window.matchMedia("(max-width: 768px)").matches);
+    };
+    window.addEventListener("resize", handleResize);
+    onCleanup(() => window.removeEventListener("resize", handleResize));
+  });
+
   return (
-    <div
-      class="bg-sidebar h-screen w-full overflow-hidden grid pt-(--titlebar-height)"
+    <Show when={!isMobile()} fallback={<MobileEditor />}>
+      <div
+        class="bg-sidebar h-screen w-full overflow-hidden grid pt-(--titlebar-height)"
       classList={{
         'grid-cols-[1fr]': !uiVisible(),
         'grid-rows-[1fr]': !uiVisible(),
@@ -292,5 +306,6 @@ export function EditorPage() {
         <FloatingProjectHeader />
       </Show>
     </div>
+    </Show>
   );
 }

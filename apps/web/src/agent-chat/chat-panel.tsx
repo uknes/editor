@@ -10,12 +10,9 @@
 import { Show, createEffect, createMemo, createSignal } from "solid-js";
 import { toast } from "somoto";
 
-import { Button } from "@/components/ui/button";
 import { useProject } from "@/context/project";
-import { downloadDesktopApp } from "@/lib/desktop-app";
-
 import type { ModelRef } from "@diffusionstudio/agent-chat";
-
+import { AgentConnectionSettings } from "./agent-connection-settings";
 import { attachmentPaths } from "./attachments";
 import { Composer } from "./composer";
 import { HeaderActions } from "./header-actions";
@@ -156,11 +153,9 @@ export function ChatPanel() {
       <Show when={chatId() === null}>
         <RecentChats projectId={project.id()} onOpen={(id) => setActiveChat(project.id(), id)} />
       </Show>
-      <Show when={chatState.connection === "unavailable"}>
-        <div class="mx-4 mb-2 flex shrink-0 items-center justify-end">
-          <Button variant="secondary" size="small" onClick={() => downloadDesktopApp("chat_panel")}>
-            Get desktop app
-          </Button>
+      <Show when={chatState.connection !== "open" && !window.desktop}>
+        <div class="mx-4 mb-2 shrink-0">
+          <AgentConnectionSettings />
         </div>
       </Show>
 

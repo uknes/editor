@@ -300,7 +300,7 @@
   }
 }
 
-@media (max-width: 719px), (max-height: 479px) {
+@media (max-width: 319px), (max-height: 359px) {
   .screen-too-small {
     display: flex;
   }

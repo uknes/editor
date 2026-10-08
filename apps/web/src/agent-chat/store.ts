@@ -407,7 +407,7 @@ export const leftSidebarWidth = (): number => (sidebarTab() === "chat" ? CHAT_SI
 
 /** For the empty state: why nothing can be sent right now, or null. */
 export function blockedReason(): string | null {
-  if (state.connection === "unavailable") return "Chat runs in the desktop app.";
+  if (state.connection === "unavailable") return "Connect to Codex or another AI agent host.";
   if (state.connection !== "open") return "Connecting to the agent host…";
   if (state.harnesses.length && state.harnesses.every((harness) => harness.status === "checking")) return "Looking for Claude Code and Codex…";
   if (!readyHarnesses().length) {
