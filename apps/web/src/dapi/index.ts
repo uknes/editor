@@ -3,3 +3,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 export { EditorApi, EditorApiProvider, useEditorApi } from "./api";
+export { attachToolTransport } from "./bridge";
+export { createWebSocketToolTransport } from "./transport";
+export type { ToolTransport, ToolTransportHandlers, WebSocketToolEnvelope } from "./transport";

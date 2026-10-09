@@ -5,17 +5,20 @@
 import { createTRPCClient, httpBatchLink, TRPCClientError, type TRPCLink } from "@trpc/client";
 import { observable } from "@trpc/server/observable";
 import { supabase } from "./supabase";
-import { showUpgradeDialog } from "@/components/upgrade-dialog";
-
 import type { AppRouter } from "@diffusionstudio/api-contract";
 
-const paymentRequiredLink: TRPCLink<AppRouter> = () => ({ next, op }) =>
+export const HOSTED_SERVICE_UNAVAILABLE_MESSAGE =
+  "This operation is still connected to the hosted Diffusion service and is not available locally yet.";
+
+export const paymentRequiredLink: TRPCLink<AppRouter> = () => ({ next, op }) =>
   observable((observer) => {
     const sub = next(op).subscribe({
       next: (value) => observer.next(value),
       error: (err) => {
         if (err instanceof TRPCClientError && err.data?.code === "PAYMENT_REQUIRED") {
-          showUpgradeDialog();
+          err.message = HOSTED_SERVICE_UNAVAILABLE_MESSAGE;
+          observer.error(err);
+          return;
         }
         observer.error(err);
       },

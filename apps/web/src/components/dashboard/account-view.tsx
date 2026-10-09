@@ -2,7 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { useSearchParams } from "@solidjs/router";
 import { Show, createEffect, createSignal } from "solid-js";
 import { toast } from "somoto";
 
@@ -32,14 +31,9 @@ import { trpc } from "@/lib/trpc";
 import {
   DashboardDividedStack,
   DashboardFormModal,
-  DashboardFreePlanDetails,
   DashboardInfoActionRow,
-  DashboardProPlanDetails,
-  DashboardPlanSummaryCard,
   DashboardScrollView,
   DashboardSurfaceSection,
-  DashboardTitledSection,
-  DashboardSurfaceCard,
 } from "./shared";
 import { cropAndResizeAvatar } from "./utils";
 import { Separator } from "@/components/ui/separator";
@@ -510,52 +504,6 @@ function DashboardAccountLinkedAccountsSection() {
   );
 }
 
-function DashboardAccountFreePlanCard() {
-  const [, setParams] = useSearchParams();
-
-  return (
-    <DashboardSurfaceCard class="flex flex-col gap-4 md:flex-row md:items-center">
-      <DashboardFreePlanDetails />
-
-      <Button
-        class="gap-0 pl-0 pr-2"
-        onClick={() => setParams({ dashboard: "billing" }, { replace: true })}
-      >
-        <span class="grid h-7 w-6 place-items-center overflow-clip">
-          <Icon name="upgrade" class="size-6" />
-        </span>
-        Upgrade to Pro
-      </Button>
-    </DashboardSurfaceCard>
-  );
-}
-
-function DashboardAccountPlanSection() {
-  const auth = useAuth();
-  const [, setParams] = useSearchParams();
-
-  return (
-    <DashboardTitledSection title="Plan">
-      <Show
-        when={auth.isPro()}
-        fallback={<DashboardAccountFreePlanCard />}
-      >
-        <DashboardPlanSummaryCard
-          action={
-            <Button
-              variant="secondary"
-              onClick={() => setParams({ dashboard: "billing" }, { replace: true })}
-            >
-              View details
-            </Button>
-          }
-        >
-          <DashboardProPlanDetails />
-        </DashboardPlanSummaryCard>
-      </Show>
-    </DashboardTitledSection>
-  );
-}
 
 type EmailPreferenceColumn =
   | "product_updates_enabled"
@@ -687,15 +635,37 @@ function DashboardAccountDangerZoneSection() {
 }
 
 export function DashboardAccountView() {
+  const auth = useAuth();
+
   return (
     <DashboardScrollView>
-      <DashboardAccountPersonalDetailsSection />
-      <DashboardAccountLoginSecuritySection />
-      <DashboardAccountActiveSessionsSection />
-      <DashboardAccountLinkedAccountsSection />
-      <DashboardAccountPlanSection />
-      <DashboardAccountEmailPreferencesSection />
-      <DashboardAccountDangerZoneSection />
+      <Show
+        when={!auth.isGuest()}
+        fallback={
+          <DashboardSurfaceSection title="Local account">
+            <DashboardInfoActionRow
+              title="You are using the editor in local guest mode."
+              description={
+                <p>
+                  All editor features, timeline tools, rendering, and MCP capabilities run completely locally without an account. You can sign in anytime to link an account or sync cloud projects.
+                </p>
+              }
+              action={
+                <Button variant="secondary" onClick={() => auth.signOut()}>
+                  Sign in
+                </Button>
+              }
+            />
+          </DashboardSurfaceSection>
+        }
+      >
+        <DashboardAccountPersonalDetailsSection />
+        <DashboardAccountLoginSecuritySection />
+        <DashboardAccountActiveSessionsSection />
+        <DashboardAccountLinkedAccountsSection />
+        <DashboardAccountEmailPreferencesSection />
+        <DashboardAccountDangerZoneSection />
+      </Show>
     </DashboardScrollView>
   );
 }

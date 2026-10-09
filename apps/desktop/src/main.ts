@@ -8,13 +8,13 @@ import { existsSync } from "node:fs";
 import { mkdir, open, rename, unlink } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
 import type { FileHandle } from "node:fs/promises";
-import { makeUserNotifier, updateElectronApp } from "update-electron-app";
 import { tempPathFor } from "./atomic";
 import { DapiServer } from "./dapi/server";
 import { agentChatEndpoint, configureAgentChat, deleteProjectChats, stopAgentChat } from "./agent-chat";
 import { cliStatus, installCli, refreshCliShim, uninstallCli } from "./cli-install";
+import { codexCloudStatus, installTunnelClient, onCodexCloudStatusChange, startCodexCloud, stopCodexCloud } from "./codex-cloud";
 import { applyMcp, healMcpRegistrations, mcpStatus } from "./mcp-install";
-import { trackEvent, trackInstall } from "./analytics";
+import { trackEvent } from "./analytics";
 import { setupAppMenu } from "./menu";
 import { AppTray } from "./tray";
 import { WindowHost } from "./window-host";
@@ -107,17 +107,7 @@ function setColorMode(mode: "dark" | "light") {
   mainWindow.setTitleBarOverlay({ ...WINDOWS_OVERLAY_COLORS[mode], height: WINDOWS_OVERLAY_HEIGHT });
 }
 
-if (app.isPackaged && !squirrelLaunch) {
-  const notifyUser = makeUserNotifier();
-  updateElectronApp({
-    repo: "diffusionstudio/editor",
-    onNotifyUser: function (info) {
-      if (windows.visible()) {
-        notifyUser(info);
-      }
-    },
-  });
-}
+
 
 const openWrites = new Map<string, { handle: FileHandle; path: string; temp: string; reserved: boolean }>();
 
@@ -378,6 +368,13 @@ if (squirrelLaunch) {
   mainBridge.handle(MAIN_CHANNELS.AGENT_CHAT_ENDPOINT, () => agentChatEndpoint());
   mainBridge.handle(MAIN_CHANNELS.MCP_STATUS, () => mcpStatus());
   mainBridge.handle(MAIN_CHANNELS.MCP_APPLY, (request) => applyMcp(request));
+  mainBridge.handle(MAIN_CHANNELS.CODEX_CLOUD_STATUS, () => codexCloudStatus());
+  mainBridge.handle(MAIN_CHANNELS.CODEX_CLOUD_START, (request) => startCodexCloud(request));
+  mainBridge.handle(MAIN_CHANNELS.CODEX_CLOUD_STOP, () => stopCodexCloud());
+  mainBridge.handle(MAIN_CHANNELS.CODEX_CLOUD_INSTALL, () => installTunnelClient());
+  onCodexCloudStatusChange((status) => {
+    mainBridge.emit(windows.current(), MAIN_CHANNELS.CODEX_CLOUD_CHANGED, status);
+  });
   mainBridge.handle(MAIN_CHANNELS.CLI_STATUS, () => cliStatus());
   mainBridge.handle(MAIN_CHANNELS.CLI_INSTALL, () => installCli());
   mainBridge.handle(MAIN_CHANNELS.CLI_UNINSTALL, () => uninstallCli());
@@ -507,7 +504,6 @@ if (squirrelLaunch) {
     );
     refreshCliShim();
     healMcpRegistrations();
-    trackInstall();
     tray.start();
 
     // Opened by a person (Finder, Dock, Start menu): show the editor
@@ -519,6 +515,7 @@ if (squirrelLaunch) {
   app.on("before-quit", () => {
     unwatchAll();
     stopAgentChat();
+    stopCodexCloud();
     dapi.stop();
     tray.destroy();
   });

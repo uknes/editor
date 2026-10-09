@@ -29,6 +29,7 @@ import {
   DashboardSurfaceSection,
   DashboardTitledSection,
 } from "./shared";
+import { DashboardCodexCloudSection } from "./codex-cloud-section";
 
 const MCP_DOCS_URL = "https://modelcontextprotocol.io/docs/2026-07-28/develop/connect-local-servers";
 
@@ -201,6 +202,7 @@ function DashboardMcpServerSection() {
   );
 }
 
+
 // --- CLI ---------------------------------------------------------------------
 
 function DashboardCliSection() {
@@ -300,6 +302,7 @@ export function DashboardMcpView() {
       >
         <DashboardAgentsSection />
         <DashboardMcpServerSection />
+        <DashboardCodexCloudSection />
         <DashboardCliSection />
       </Show>
     </DashboardScrollView>

@@ -26,7 +26,6 @@ import { FileMenu } from "./file-menu";
 import { EditMenu } from "./edit-menu";
 import { ViewMenu } from "./view-menu";
 import { ToolMenu } from "./tool-menu";
-import { AiCreditsMenu } from "./ai-credits-menu";
 import { HelpMenu } from "./help-menu";
 
 export function ProjectMenu() {
@@ -126,14 +125,7 @@ export function ProjectMenu() {
             <DropdownMenuSeparator />
 
             <DropdownMenuGroup>
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger>AI credits</DropdownMenuSubTrigger>
-                <DropdownMenuPortal>
-                  <DropdownMenuSubContent class="w-[188px]">
-                    <AiCreditsMenu />
-                  </DropdownMenuSubContent>
-                </DropdownMenuPortal>
-              </DropdownMenuSub>
+
 
               <DropdownMenuSub>
                 <DropdownMenuSubTrigger>Help</DropdownMenuSubTrigger>

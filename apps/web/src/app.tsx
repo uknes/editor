@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { Router, HashRouter, Route, useLocation } from '@solidjs/router';
+import { Router, HashRouter, Route } from '@solidjs/router';
 import { ColorModeProvider } from '@kobalte/core';
 import { Show, createEffect, createMemo, type JSX } from 'solid-js';
 import { Toaster } from "@/components/ui/sonner";
@@ -15,8 +15,6 @@ import { mainBridge } from "@/lib/ipc";
 import { MAIN_CHANNELS } from "@desktop/main-channels";
 import { EditorApi } from '@/dapi';
 import { renderOverlay } from '@/context/render';
-import { UpgradeDialog } from '@/components/upgrade-dialog';
-import { PurchaseSuccess } from '@/components/purchase-success';
 import { ScreenTooSmall } from '@/components/screen-too-small';
 import { UnsupportedBrowser } from '@/components/unsupported-browser';
 import { ProjectPage } from '@/pages/project';
@@ -78,14 +76,11 @@ function ReportRendering() {
 }
 
 function EnvironmentOverlays() {
-  const location = useLocation();
-  const onCheckoutPage = () => location.pathname.startsWith('/checkout');
-
   return (
-    <Show when={!onCheckoutPage()}>
+    <>
       <ScreenTooSmall />
       <UnsupportedBrowser />
-    </Show>
+    </>
   );
 }
 
@@ -99,8 +94,6 @@ function App() {
             <AuthProvider>
               {props.children}
               <BootSplash />
-              <UpgradeDialog />
-              <PurchaseSuccess />
               <EditorApi />
             </AuthProvider>
           </AppContextMenu>

@@ -12,6 +12,10 @@ import { mediaGrab } from "./media-grab";
 import { mediaListen } from "./media-listen";
 import { mediaSegment } from "./media-segment";
 import { mediaTranscribe } from "./media-transcribe";
+import { renderPreview } from "./render-preview";
+import { timelineFilmstrip } from "./timeline-filmstrip";
+import { timelineInspect } from "./timeline-inspect";
+import { timelineUndo } from "./timeline-undo";
 
 /** The messages of a failed parse, keyed by the path they point at. */
 function issues(result: { success: boolean; error?: { issues: Array<{ path: PropertyKey[]; message: string }> } }) {
@@ -83,6 +87,17 @@ describe("media_filmstrip and media_listen", () => {
     expect(issues(mediaFilmstrip.input.safeParse({ path: "/c.mp4", start: 3, end: 3 }))).toHaveProperty("end");
     expect(issues(mediaListen.input.safeParse({ path: "/c.mp4", start: "0:05", end: 4 }))).toHaveProperty("end");
     expect(mediaFilmstrip.input.safeParse({ path: "/c.mp4", scale: 0 }).success).toBe(false);
+  });
+
+  it("media_listen output schema permits graceful capability and informational strings", () => {
+    expect(
+      mediaListen.output.safeParse({
+        result:
+          "Hosted audio analysis is not available in this local desktop fork. Audio analysis is optional; continue using visual inspection.",
+        start: 0,
+        end: 10,
+      }).success,
+    ).toBe(true);
   });
 });
 
@@ -192,3 +207,29 @@ describe("media_segment", () => {
     expect(input.safeParse({ ...at, box: [0, 0, 1, 1], model: "huge" }).success).toBe(false);
   });
 });
+
+describe("render_preview", () => {
+  it("accepts default options and parses time inputs", () => {
+    const parsed = renderPreview.input.parse({ id: "scene1", start: "1.5s", end: 10, resolution: 480, fps: 15 });
+    expect(parsed.start).toBe(1.5);
+    expect(parsed.end).toBe(10);
+    expect(parsed.resolution).toBe(480);
+    expect(parsed.fps).toBe(15);
+  });
+});
+
+describe("timeline_filmstrip", () => {
+  it("validates time bounds and frame count", () => {
+    const parsed = timelineFilmstrip.input.parse({ id: "scene1", start: 0, end: "0:10", frameCount: 12 });
+    expect(parsed.frameCount).toBe(12);
+    expect(parsed.end).toBe(10);
+  });
+});
+
+describe("timeline_inspect & timeline_undo", () => {
+  it("parses empty input objects cleanly", () => {
+    expect(timelineInspect.input.safeParse({}).success).toBe(true);
+    expect(timelineUndo.input.safeParse({}).success).toBe(true);
+  });
+});
+

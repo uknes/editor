@@ -38,6 +38,8 @@ export async function present(name: ToolName, args: unknown, result: unknown): P
   switch (name) {
     case "capture":
       return presentImages(result as ToolResult<"capture">, (args as ToolArgs<"capture">).output, "capture");
+    case "timeline_filmstrip":
+      return presentImages(result as ToolResult<"timeline_filmstrip">, (args as ToolArgs<"timeline_filmstrip">).output, "filmstrip");
     case "media_grab":
       return presentImages(result as ToolResult<"media_grab">, (args as ToolArgs<"media_grab">).output, "grab");
     case "media_filmstrip":

@@ -18,9 +18,11 @@ export {
   storedModel,
   setStoredModel,
   ensureConnected,
+  chatState,
   ASSETS_SIDEBAR_WIDTH,
   CHAT_SIDEBAR_WIDTH,
 } from "./store";
+export { AgentConnectionSettings } from "./agent-connection-settings";
 export {
   AttachmentTile,
   DropOverlay,

@@ -7,8 +7,6 @@ import { Match, Show, Switch, createEffect, createSignal, onCleanup, onMount } f
 import { toast } from "somoto";
 
 import { DashboardAccountView } from "@/components/dashboard/account-view";
-import { DashboardAiCreditsView } from "@/components/dashboard/ai-credits-view";
-import { DashboardBillingView } from "@/components/dashboard/billing-view";
 import { DashboardGetDesktopApp } from "@/components/dashboard/get-desktop-app";
 import { DashboardHelpView } from "@/components/dashboard/help-view";
 import { DashboardHomeView } from "@/components/dashboard/home-view";
@@ -26,10 +24,12 @@ import {
   DashboardSidebarUser,
 } from "@/components/dashboard/sidebar";
 import { Separator } from "@/components/ui/separator";
+import { Icon } from "@/components/ui/icon";
 import { useFullscreenState } from "@/hooks/use-fullscreen-state";
 import { connectedAgents, fetchMcpStatus } from "@/lib/mcp";
 import { isDesktop, isWindowsDesktop, openProjectFolder, pickProjectFolder } from "@/projects";
 import { isInputTarget } from "@/utils";
+import { useIsPhone } from "@/utils/mobile";
 
 import type { DashboardView } from "@/components/dashboard/types";
 
@@ -37,8 +37,6 @@ const DASHBOARD_VIEWS: readonly DashboardView[] = [
   "home",
   "projects",
   "templates",
-  "ai-credits",
-  "billing",
   "account",
   "settings",
   "mcp",
@@ -51,8 +49,6 @@ const SETTINGS_VIEWS: readonly DashboardView[] = [
   "account",
   "settings",
   "mcp",
-  "ai-credits",
-  "billing",
   "help",
 ];
 
@@ -126,54 +122,56 @@ export function DashboardPage() {
     if (isSettingsView(view())) setView("home");
   };
 
+  const isMobile = useIsPhone();
+
   return (
-    <div class="flex h-screen w-full min-h-0 flex-row overflow-hidden bg-sidebar">
-      <aside class="relative flex min-h-0 w-69 shrink-0 flex-col">
-        <Show when={!!window.desktop && !isFullscreen()}>
-          <div class="absolute inset-x-0 top-0 h-10 z-20" style="-webkit-app-region: drag;" />
-        </Show>
-        <Show when={!isWindowsDesktop()} fallback={<DashboardSidebarTitleBar />}>
-          <Show when={!settingsNavOpen()} fallback={<DashboardSidebarTopSpacer />}>
-            <DashboardSidebarHeader />
+    <div class="flex h-screen w-full min-h-0 flex-col md:flex-row overflow-hidden bg-sidebar">
+      <Show when={!isMobile()}>
+        <aside class="relative flex min-h-0 w-69 shrink-0 flex-col">
+          <Show when={!!window.desktop && !isFullscreen()}>
+            <div class="absolute inset-x-0 top-0 h-10 z-20" style="-webkit-app-region: drag;" />
           </Show>
-        </Show>
-        <DashboardSidebarNav
-          footer={
-            <Show when={!settingsNavOpen() && showConnectCard()}>
-              <DashboardSidebarConnectCard onInstall={openAgentSetup} />
+          <Show when={!isWindowsDesktop()} fallback={<DashboardSidebarTitleBar />}>
+            <Show when={!settingsNavOpen()} fallback={<DashboardSidebarTopSpacer />}>
+              <DashboardSidebarHeader />
             </Show>
-          }
-        >
-          <Show
-            when={settingsNavOpen()}
-            fallback={
-              <DashboardSidebarSection>
-                <DashboardSidebarItem active={view() === "home"} onClick={() => setView("home")} icon="home" label="Home" />
-                <DashboardSidebarItem active={view() === "projects"} onClick={() => setView("projects")} icon="diffusion-project-file" label="Projects" />
-              </DashboardSidebarSection>
+          </Show>
+          <DashboardSidebarNav
+            footer={
+              <Show when={!settingsNavOpen() && showConnectCard()}>
+                <DashboardSidebarConnectCard onInstall={openAgentSetup} />
+              </Show>
             }
           >
-            <DashboardSidebarSection>
-              <DashboardSidebarItem onClick={backToDashboard} icon="arrow-left" label="Back to dashboard" />
-            </DashboardSidebarSection>
-            <DashboardSidebarSection title="Settings">
-              <DashboardSidebarItem active={view() === "account"} onClick={() => setView("account")} icon="user" label="Account" />
-              <DashboardSidebarItem active={view() === "settings"} onClick={() => setView("settings")} icon="settings" label="General" />
-              <DashboardSidebarItem active={view() === "mcp"} onClick={() => setView("mcp")} icon="ai-mcp-cli" label="MCP & CLI" />
-              <DashboardSidebarItem active={view() === "ai-credits"} onClick={() => setView("ai-credits")} icon="ai-generate" label="AI credits" />
-              <DashboardSidebarItem active={view() === "billing"} onClick={() => setView("billing")} icon="billing" label="Billing" />
-              <DashboardSidebarItem active={view() === "help"} onClick={() => setView("help")} icon="help" label="Help" />
-            </DashboardSidebarSection>
+            <Show
+              when={settingsNavOpen()}
+              fallback={
+                <DashboardSidebarSection>
+                  <DashboardSidebarItem active={view() === "home"} onClick={() => setView("home")} icon="home" label="Home" />
+                  <DashboardSidebarItem active={view() === "projects"} onClick={() => setView("projects")} icon="diffusion-project-file" label="Projects" />
+                </DashboardSidebarSection>
+              }
+            >
+              <DashboardSidebarSection>
+                <DashboardSidebarItem onClick={backToDashboard} icon="arrow-left" label="Back to dashboard" />
+              </DashboardSidebarSection>
+              <DashboardSidebarSection title="Settings">
+                <DashboardSidebarItem active={view() === "account"} onClick={() => setView("account")} icon="user" label="Account" />
+                <DashboardSidebarItem active={view() === "settings"} onClick={() => setView("settings")} icon="settings" label="General" />
+                <DashboardSidebarItem active={view() === "mcp"} onClick={() => setView("mcp")} icon="ai-mcp-cli" label="MCP & CLI" />
+                <DashboardSidebarItem active={view() === "help"} onClick={() => setView("help")} icon="help" label="Help" />
+              </DashboardSidebarSection>
+            </Show>
+          </DashboardSidebarNav>
+          <Show when={!settingsNavOpen()}>
+            <DashboardSidebarUser onClick={openProfile} />
           </Show>
-        </DashboardSidebarNav>
-        <Show when={!settingsNavOpen()}>
-          <DashboardSidebarUser onClick={openProfile} />
-        </Show>
-      </aside>
+        </aside>
 
-      <Separator orientation="vertical" class="bg-border-strong" />
+        <Separator orientation="vertical" class="bg-border-strong" />
+      </Show>
 
-      <section class="flex min-h-0 flex-1 flex-col bg-overlay-soft">
+      <section class="flex min-h-0 flex-1 flex-col bg-overlay-soft overflow-hidden">
         <Switch>
           <Match when={view() === "home"}>
             <DashboardHomeView />
@@ -181,12 +179,7 @@ export function DashboardPage() {
           <Match when={view() === "projects"}>
             <DashboardProjectsView />
           </Match>
-          <Match when={view() === "ai-credits"}>
-            <DashboardAiCreditsView />
-          </Match>
-          <Match when={view() === "billing"}>
-            <DashboardBillingView />
-          </Match>
+
           <Match when={view() === "account"}>
             <DashboardAccountView />
           </Match>
@@ -202,6 +195,48 @@ export function DashboardPage() {
         </Switch>
         <DashboardGetDesktopApp />
       </section>
+
+      {/* Mobile Bottom Dock for Dashboard */}
+      <Show when={isMobile()}>
+        <nav class="h-14 border-t border-border bg-sidebar flex items-center justify-around px-2 shrink-0 z-30">
+          <button
+            type="button"
+            class="flex flex-col items-center justify-center gap-0.5 text-xs py-1 px-3 rounded"
+            classList={{ "text-primary font-semibold": view() === "home", "text-muted-foreground": view() !== "home" }}
+            onClick={() => setView("home")}
+          >
+            <Icon name="home" class="size-4" />
+            <span class="text-[10px]">Home</span>
+          </button>
+          <button
+            type="button"
+            class="flex flex-col items-center justify-center gap-0.5 text-xs py-1 px-3 rounded"
+            classList={{ "text-primary font-semibold": view() === "projects", "text-muted-foreground": view() !== "projects" }}
+            onClick={() => setView("projects")}
+          >
+            <Icon name="diffusion-project-file" class="size-4" />
+            <span class="text-[10px]">Projects</span>
+          </button>
+          <button
+            type="button"
+            class="flex flex-col items-center justify-center gap-0.5 text-xs py-1 px-3 rounded"
+            classList={{ "text-primary font-semibold": view() === "mcp", "text-muted-foreground": view() !== "mcp" }}
+            onClick={() => setView("mcp")}
+          >
+            <Icon name="ai-mcp-cli" class="size-4" />
+            <span class="text-[10px]">Codex / AI</span>
+          </button>
+          <button
+            type="button"
+            class="flex flex-col items-center justify-center gap-0.5 text-xs py-1 px-3 rounded"
+            classList={{ "text-primary font-semibold": view() === "settings", "text-muted-foreground": view() !== "settings" }}
+            onClick={() => setView("settings")}
+          >
+            <Icon name="settings" class="size-4" />
+            <span class="text-[10px]">Settings</span>
+          </button>
+        </nav>
+      </Show>
     </div>
   );
 }

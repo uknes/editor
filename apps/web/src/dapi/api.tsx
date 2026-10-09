@@ -73,7 +73,7 @@ export function EditorApiProvider(props: { children: JSX.Element }) {
   const engine = useEngineContext();
 
   createEffect(() => {
-    if (!window.desktop || project.id() !== world.get(Project)?.id) return;
+    if (project.id() !== world.get(Project)?.id) return;
 
     setEditorSession({ world, project, engine });
     onCleanup(() => setEditorSession(null));

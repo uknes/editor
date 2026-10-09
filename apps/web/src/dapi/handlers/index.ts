@@ -18,6 +18,10 @@ import { mediaFilmstrip } from "./media-filmstrip";
 import { mediaWaveform } from "./media-waveform";
 import { mediaListen } from "./media-listen";
 import { mediaSegment } from "./media-segment";
+import { renderPreview } from "./preview";
+import { timelineFilmstrip } from "./timeline-filmstrip";
+import { timelineInspect } from "./timeline-inspect";
+import { timelineUndo } from "./timeline-undo";
 
 import type { Handlers } from "../handler";
 
@@ -39,4 +43,9 @@ export const handlers: Handlers = {
   media_waveform: mediaWaveform,
   media_listen: mediaListen,
   media_segment: mediaSegment,
+  render_preview: renderPreview,
+  timeline_filmstrip: timelineFilmstrip,
+  timeline_inspect: timelineInspect,
+  timeline_undo: timelineUndo,
 };
+
